@@ -2,28 +2,36 @@ import styled from "styled-components"
 import axios from "axios";
 import { useState, useEffect } from "react";
 import Loading from "./Loading";
-import { useParams } from 'react-router-dom';
+import { useParams , useNavigate } from 'react-router-dom';
 
 
-export default function ArmChairCine() {
 
-    const [seat, setSeat] = useState(null);
+export default function ArmChairCine(props) {
+
+    let navigate= useNavigate();
+
+   
 
     const sessionID = useParams();
 
-    const [selectedSeats,setSelectedSeats] = useState ([])
+   
+
+    console.log("NOMEE", props.nome)
+    console.log("CPF", props.cpf)
+  
 
 
 
     console.log("IDSESSAO", sessionID.idSessao);
-    console.log("objeto", seat)
+    console.log("objeto", props.seat)
+
 
 
     useEffect(() => {
         const request = axios.get(`https://mock-api.driven.com.br/api/v5/cineflex/showtimes/${sessionID.idSessao}/seats`)
 
         request.then((res) => {
-            setSeat(res.data)
+            props.setSeat(res.data)
         })
 
         request.catch((err) => {
@@ -32,14 +40,14 @@ export default function ArmChairCine() {
 
     }, [])
 
-    if (seat === null) {
+    if (props.seat === null) {
         return <Loading />
     }
 
-    function seatsColor (s) {
+    function seatsColor(s) {
 
-        if (s.isAvailable === true){
-            if (selectedSeats.includes(s.id)){
+        if (s.isAvailable === true) {
+            if (props.selectedSeats.includes(s.id)) {
                 return "#1AAE9E"
             } else {
                 return "#C3CFD9"
@@ -50,50 +58,80 @@ export default function ArmChairCine() {
 
     }
 
-    function selectSeats (s){
+    function selectSeats(s) {
 
-        if (s.isAvailable === false){
-            alert ("Assento indisponível")
+        if (s.isAvailable === false) {
+            alert("Assento indisponível")
             return
-        } if (!selectedSeats.includes(s.id)){
-            setSelectedSeats([...selectedSeats,s.id])
-        }   else {
-            const revomeSeats = selectedSeats.filter((selected)=>s.id !== selected)
-            setSelectedSeats(revomeSeats);
+        } if (!props.selectedSeats.includes(s.id)) {
+            props.setSelectedSeats([...props.selectedSeats, s.id])
+        } else {
+            const revomeSeats = props.selectedSeats.filter((selected) => s.id !== selected)
+            props.setSelectedSeats(revomeSeats);
         }
     }
 
+    function submitInfo(event) {
+        event.preventDefault();
+        const sendInfo = axios.post("https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many", {
+            ids: props.selectedSeats,
+            name: props.name,
+            cpf: props.cpf
+        });
+
+        sendInfo.catch((err)=>{
+            alert(err.response.data);
+        })
+        
+        sendInfo.then(()=>
+            navigate('/sucesso')
+        )
+    }
+
+    function addName(e) {
+        props.setName(e)
+    }
+    
+    function addCPF(e) {
+        props.setCPF(e)
+    }
 
     return (
-        <>
+        <Page>
             <Title>Selecione o(os) assento(os)</Title>
             <SeatsContainer>
-                {seat.seats.map((s, index) => 
-                <SeatsItem itemColor={()=>seatsColor(s)} key={index}  onClick = {()=>selectSeats(s)}> {index + 1} </SeatsItem>          
+                {props.seat.seats.map((s, index) =>
+                    <SeatsItem itemColor={() => seatsColor(s)} key={index} onClick={() => selectSeats(s)}> {index + 1} </SeatsItem>
                 )}
             </SeatsContainer>
-            <SubtitleColor>
-                <div> 
-                    <h1></h1>
-                    <h2>Selecionado</h2>
-                </div>
-                <div> 
-                    <h3></h3>
-                    <h2>Disponível</h2>
-                </div>
-                <div> 
-                    <h4></h4>
-                    <h2>Indisponível</h2>
-                </div>
-            </SubtitleColor>
-            
+            <Subtitle>
+                <div> <SubtitleColor color={"#1AAE9E"} border={"#0E7D71"} /> Selecionado</div>
+                <div> <SubtitleColor color={"#C3CFD9"} border={"#7B8B99"} /> Disponível</div>
+                <div> <SubtitleColor color={"#FBE192"} border={"#F7C52B"} /> Indisponível</div>
+            </Subtitle>
+            <InputUserInfo onSubmit={submitInfo}>
+                <div> Nome do comprador: <input type="text"  onChange={e=> addName(e.target.value)}  placeholder="Digite seu nome..." required></input>  </div>
+                <div> CPF do comprador: <input type="number"  onChange={e=> addCPF(e.target.value)}  placeholder="Digite seu CPF..." required></input>  </div>
+                <button type="submit">Reservar Assento(os)</button>
+            </InputUserInfo>
 
+            <Footer>
+                <img src={props.seat.movie.posterURL} alt="Movie" />
+                <h1>{props.seat.movie.title} {props.seat.day.weekday}-{props.seat.name}</h1>
+            </Footer>
 
-        </>
+        </Page>
 
     )
 }
 
+
+
+const Page = styled.div`
+display:flex;
+flex-direction:column;
+align-items:center;
+`
 
 const Title = styled.div`
 display:flex;
@@ -142,43 +180,107 @@ const SeatsItem = styled.div`
 
 `
 
-const SubtitleColor = styled.div`
+const Subtitle = styled.div`
     display:flex;
     justify-content:space-evenly;
     margin:16px;
     
-    h1{
-    width: 25px;
-    height: 25px;
-    background-color: #1AAE9E;
-    border: 1px solid #0E7D71;
-    border-radius: 17px;
-    }
-    h2 {
-
+    div {
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 400;
     font-size: 13px;
     line-height: 15px;
     display: flex;
+    flex-direction:column;
     align-items: center;
     letter-spacing: -0.013em;
     color: #4E5A65;
+   
     }
-    h3{
+    
+
+`
+const SubtitleColor = styled.div`
+ 
     width: 25px;
     height: 25px;
-    background-color: #C3CFD9;
-    border: 1px solid #7B8B99;
+    background-color: ${props => props.color};
+    border: 1px solid ${props => props.border};
     border-radius: 17px;
+    
+`
+
+const InputUserInfo = styled.form`
+    display:flex;
+    align-items:center;
+    flex-direction:column;
+    
+
+    div{
+        display:flex;
+        flex-direction:column;
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 21px;
+        margin-top:20px;
+        
+
+
+        input {
+            width: 327px;
+            height: 51px;
+            background: #FFFFFF;
+            border: 1px solid #D5D5D5;
+            border-radius: 3px;
+        }
+      
     }
-    h4{
-    width: 25px;
-    height: 25px;
-    background-color: #FBE192;
-    border: 1px solid #F7C52B;
-    border-radius: 17px;
-    }
+      
+    button{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width: 225px;
+            height: 42px;
+            font-family: 'Roboto';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 21px;
+            background: #E8833A;
+            color:#FFFFFF;
+            border-radius: 3px;
+            margin-top:52px;
+        }
+
+`
+const Footer = styled.div`
+    display:flex;
+    align-items:center;
+    width:100%;
+    height:117px;
+    background-color:#DFE6ED;
+    position:fixed;
+    bottom:0;
+    
+   
+    
+img{
+    width:48px;
+    margin-left:10px;
+    
+}
+h1{
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;   
+    font-size: 26px;
+    line-height: 30px;
+    color: #293845;
+    margin-left:14px;
+}
 
 `

@@ -24,6 +24,7 @@ export default function MovieSession() {
              console.log("Error",err.response.data)
         })
     }, [])
+
     if (session === null) {
         return <Loading />
     }
@@ -35,12 +36,12 @@ export default function MovieSession() {
             {session.days.map(iten =>
                 <Sessions key={iten.id}>
                     <DaySession >{iten.weekday}-{iten.date}</DaySession>
-                    <HourSession> {iten.showtimes.map(h => <p key={h.id}> <Link to={`/assentos/${iten.id}`}>   {h.name}</Link>  </p>)}   </HourSession>
+                    <HourSession> {iten.showtimes.map(h => <p key={h.id}> <Link to={`/assentos/${h.id}`}>   {h.name}</Link>  </p>)}   </HourSession>
                 </Sessions>
             )}
 
             <Footer>
-                <img src={session.posterURL} />
+                <img src={session.posterURL} alt="Movie"/>
                 <h1>{session.title}</h1>
             </Footer>
         </>
