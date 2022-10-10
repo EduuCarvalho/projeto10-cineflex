@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 export default function FilmCatalog() {
     const [film, setFilm] = useState(null);
    
-   console.log("film",film)
+
 
     useEffect(() => {
         const request = axios.get("https://mock-api.driven.com.br/api/v5/cineflex/movies");

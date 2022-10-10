@@ -3,7 +3,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import Loading from "./Loading";
 import { useParams } from 'react-router-dom';
-
+import { Link } from "react-router-dom";
 
 export default function MovieSession() {
 
@@ -21,7 +21,7 @@ export default function MovieSession() {
         })
 
         request.catch((err) => {
-            //  console.log("Error",err.response.data)
+             console.log("Error",err.response.data)
         })
     }, [])
     if (session === null) {
@@ -33,13 +33,16 @@ export default function MovieSession() {
             <Title>Selecione o horário</Title>
 
             {session.days.map(iten =>
-                <Sessions>
-                    <DaySession>{iten.weekday}-{iten.date}</DaySession>
-                    <HourSession> {iten.showtimes.map(h => <p>{h.name}</p>)}</HourSession>
+                <Sessions key={iten.id}>
+                    <DaySession >{iten.weekday}-{iten.date}</DaySession>
+                    <HourSession> {iten.showtimes.map(h => <p key={h.id}> <Link to={`/assentos/${iten.id}`}>   {h.name}</Link>  </p>)}   </HourSession>
                 </Sessions>
             )}
 
-
+            <Footer>
+                <img src={session.posterURL} />
+                <h1>{session.title}</h1>
+            </Footer>
         </>
     )
 
@@ -66,7 +69,9 @@ const Title = styled.div`
 const Sessions = styled.div`
     display:flex;
     flex-direction:column;
-
+    align-items:flex-start;
+    margin-left:22px;
+    
 `
 
 
@@ -74,13 +79,12 @@ const DaySession = styled.div`
     display:flex;
     justify-content:center;
     margin-bottom:22px;
-
-
+    margin-top:23px;
 `
 const HourSession = styled.div`
 display:flex;
 justify-content:center;
-margin:0px 12px 0px 12px;
+margin-right:12px;
 
 p{
     display:flex;
@@ -91,5 +95,35 @@ p{
     color: #FFFFFF;
     background-color: #E8833A;
     border-radius: 3px;
+    margin-right:9px;
+   
 }
+`
+
+const Footer = styled.div`
+    display:flex;
+    align-items:center;
+    width:100%;
+    height:117px;
+    background-color:#DFE6ED;
+    position:fixed;
+    bottom:0;
+    
+   
+    
+img{
+    width:48px;
+    margin-left:10px;
+    
+}
+h1{
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;   
+    font-size: 26px;
+    line-height: 30px;
+    color: #293845;
+    margin-left:14px;
+}
+
 `
