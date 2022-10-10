@@ -36,7 +36,7 @@ export default function MovieSession() {
             {session.days.map(iten =>
                 <Sessions key={iten.id}>
                     <DaySession >{iten.weekday}-{iten.date}</DaySession>
-                    <HourSession> {iten.showtimes.map(h => <p key={h.id}> <Link to={`/assentos/${h.id}`}>   {h.name}</Link>  </p>)}   </HourSession>
+                    <HourSession> {iten.showtimes.map(h => <p key={h.id}> <Link to={`/assentos/${h.id}`} style={{textDecoration:'none',color:'#FEFFFF'}}>   {h.name} </Link>  </p>)}   </HourSession>
                 </Sessions>
             )}
 
@@ -86,7 +86,11 @@ const HourSession = styled.div`
 display:flex;
 justify-content:center;
 margin-right:12px;
-
+font-family: 'Roboto';
+font-style: normal;
+font-weight: 400;
+font-size: 18px;
+line-height: 21px;
 p{
     display:flex;
     width:82px;
